@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import weeklySchedule from '../data/workouts';
 import { DiasTreino, ApiResponse } from '../types/workout.types';
+import { authMiddleware } from '../middleware/auth.middleware';
+import { exercicioRepository } from '../repositories/exercicio.repository';
 
 const router = Router();
 
@@ -191,6 +193,104 @@ router.get('/:day', (req: Request, res: Response<ApiResponse<DiasTreino>>) => {
   }
 
   res.json({ success: true, data: found });
+});
+
+/**
+ * @swagger
+ * /api/workouts/exercicios/{id}:
+ *   get:
+ *     summary: Retorna um exercício pelo ID
+ *     tags: [Workouts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Dados do exercício
+ *       404:
+ *         description: Exercício não encontrado
+ */
+router.get('/exercicios/:id', authMiddleware, async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id)) {
+    res.status(400).json({ success: false, message: 'ID inválido.' });
+    return;
+  }
+
+  const exercicio = await exercicioRepository.findById(id);
+
+  if (!exercicio) {
+    res.status(404).json({ success: false, message: 'Exercício não encontrado.' });
+    return;
+  }
+
+  res.json({ success: true, data: exercicio });
+});
+
+/**
+ * @swagger
+ * /api/workouts/exercicios/{id}:
+ *   patch:
+ *     summary: Atualiza dados de um exercício
+ *     tags: [Workouts]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               desc:
+ *                 type: string
+ *               sets:
+ *                 type: integer
+ *               reps:
+ *                 type: integer
+ *               rest:
+ *                 type: integer
+ *               weight:
+ *                 type: string
+ *               tag:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Exercício atualizado
+ *       404:
+ *         description: Exercício não encontrado
+ */
+router.patch('/exercicios/:id', authMiddleware, async (req: Request, res: Response) => {
+  const id = Number(req.params.id);
+
+  if (isNaN(id)) {
+    res.status(400).json({ success: false, message: 'ID inválido.' });
+    return;
+  }
+
+  const exercicio = await exercicioRepository.findById(id);
+  if (!exercicio) {
+    res.status(404).json({ success: false, message: 'Exercício não encontrado.' });
+    return;
+  }
+
+  const { name, desc, sets, reps, rest, weight, tag } = req.body;
+  const atualizado = await exercicioRepository.update(id, { name, desc, sets, reps, rest, weight, tag });
+
+  res.json({ success: true, data: atualizado });
 });
 
 export default router;

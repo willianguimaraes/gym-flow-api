@@ -1,40 +1,64 @@
-export interface Exercicios {
-   id: number;
-   name: string;
-   desc: string;
-   sets: number;
-   reps: number;
-   rest: number;
-   weight: string;
-   tag: string;
-   finalizado?: boolean;
+export interface ExercicioCatalogo {
+  id:              number;
+  name:            string;
+  desc:            string;
+  musculoPrimario: string;
+  musculosSecund:  string[];
+  equipamento:     string;
+  tag:             string;
+  createdAt?:      string;
+}
+
+export interface TreinoExercicio {
+  id:          number;
+  treinoId:    number;
+  exercicioId: number;
+  exercicio?:  ExercicioCatalogo;
+  ordem:       number;
+  sets:        number;
+  reps:        number;
+  rest:        number;
+  weight:      number;        // 0 = peso corporal
+  finalizado?: boolean;
 }
 
 export interface Treino {
-    id: number;
-    name: string;
-    category: string;
-    color: string;
-    duration: number;
-    kcal: number;
-    difficulty: number;
-    description?: string;
-    muscles: string[];
-    exercises: Exercicios[];
+  id:           number;
+  usuarioId:    number;
+  name:         string;
+  category:     string;
+  color:        string;
+  duration:     number;
+  kcal:         number;
+  difficulty:   number;
+  description?: string;
+  muscles:      string[];
+  exercises:    TreinoExercicio[];
+  createdAt?:   string;
 }
 
-export interface DiasTreino {
-   abbr: string;
-   fullName: string;
-   num: number;
-   isRest: boolean;
-   title: string;
-   treino?: Treino | null;
+export interface PlanoTreinoDia {
+  id:        number;
+  planoId:   number;
+  diaSemana: number;
+  isRest:    boolean;
+  treinoId?: number | null;
+  treino?:   Treino | null;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  message?: string;
-  available?: string[];
+export interface PlanoTreino {
+  id:         number;
+  usuarioId:  number;
+  nome:       string;
+  descricao?: string;
+  inicioEm:   string;
+  fimEm?:     string | null;
+  ativo:      boolean;
+  dias:       PlanoTreinoDia[];
+  createdAt?: string;
+}
+
+export interface TreinoDoDia {
+  plano: PlanoTreino;
+  dia:   PlanoTreinoDia | null;
 }

@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Usuario {
+  id        Int              @id @default(autoincrement())
+  nome      String
+  usuario   String           @unique
+  email     String           @unique
+  senha     String
+  celular   String?
+  altura    Float?
+  peso      Float?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  planos    PlanoTreino[]
+  treinos   Treino[]
+  sessions  WorkoutSession[]
+}
+
+model ExercicioCatalogo {
+  id               Int               @id @default(autoincrement())
+  name             String
+  desc             String
+  musculoPrimario  String
+  musculosSecund   String[]
+  equipamento      String
+  tag              String
+  createdAt        DateTime          @default(now())
+  treinoExercicios TreinoExercicio[]
+  substituicoes    ExerciseLog[]     @relation("SubstituicaoLog")
+}
+
+model TreinoExercicio {
+  id          Int               @id @default(autoincrement())
+  treinoId    Int
+  treino      Treino            @relation(fields: [treinoId], references: [id])
+  exercicioId Int
+  exercicio   ExercicioCatalogo @relation(fields: [exercicioId], references: [id])
+  ordem       Int
+  sets        Int
+  reps        Int
+  rest        Int
+  weight      Float
+  logs        ExerciseLog[]
+}
+
+model Treino {
+  id          Int               @id @default(autoincrement())
+  usuarioId   Int
+  usuario     Usuario           @relation(fields: [usuarioId], references: [id])
+  name        String
+  category    String
+  color       String
+  duration    Int
+  kcal        Int
+  difficulty  Int
+  description String?
+  muscles     String[]
+  exercises   TreinoExercicio[]
+  sessions    WorkoutSession[]
+  diasPlano   PlanoTreinoDia[]
+  createdAt   DateTime          @default(now())
+}
+
+model PlanoTreino {
+  id        Int              @id @default(autoincrement())
+  usuarioId Int
+  usuario   Usuario          @relation(fields: [usuarioId], references: [id])
+  nome      String
+  descricao String?
+  inicioEm  DateTime
+  fimEm     DateTime?
+  ativo     Boolean          @default(false)
+  dias      PlanoTreinoDia[]
+  sessions  WorkoutSession[]
+  createdAt DateTime         @default(now())
+}
+
+model PlanoTreinoDia {
+  id        Int          @id @default(autoincrement())
+  planoId   Int
+  plano     PlanoTreino  @relation(fields: [planoId], references: [id])
+  diaSemana Int
+  isRest    Boolean      @default(false)
+  treinoId  Int?
+  treino    Treino?      @relation(fields: [treinoId], references: [id])
+}
+
+model WorkoutSession {
+  id          Int          @id @default(autoincrement())
+  usuarioId   Int
+  usuario     Usuario      @relation(fields: [usuarioId], references: [id])
+  treinoId    Int
+  treino      Treino       @relation(fields: [treinoId], references: [id])
+  planoId     Int?
+  plano       PlanoTreino? @relation(fields: [planoId], references: [id])
+  trainedAt   DateTime     @default(now())
+  durationMin Int?
+  notes       String?
+  logs        ExerciseLog[]
+}
+
+model ExerciseLog {
+  id                Int                @id @default(autoincrement())
+  sessionId         Int
+  session           WorkoutSession     @relation(fields: [sessionId], references: [id])
+  treinoExercicioId Int
+  treinoExercicio   TreinoExercicio    @relation(fields: [treinoExercicioId], references: [id])
+  substituidoPorId  Int?
+  substituidoPor    ExercicioCatalogo? @relation("SubstituicaoLog", fields: [substituidoPorId], references: [id])
+  setsDone          Int
+  completed         Boolean            @default(false)
+  weightUsed        Float?
+  createdAt         DateTime           @default(now())
+  sets              ExercicioSet[]
+
+  @@unique([sessionId, treinoExercicioId])
+}
+
+model ExercicioSet {
+  id         Int         @id @default(autoincrement())
+  logId      Int
+  log        ExerciseLog @relation(fields: [logId], references: [id])
+  setNum     Int
+  reps       Int
+  weightUsed Float
+  createdAt  DateTime    @default(now())
+
+  @@unique([logId, setNum])
+}
