@@ -48,6 +48,7 @@ model TreinoExercicio {
   rest        Int
   weight      Float
   logs        ExerciseLog[]
+  observacao  String?
 }
 
 model Treino {

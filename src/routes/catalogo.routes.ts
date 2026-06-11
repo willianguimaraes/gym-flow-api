@@ -176,8 +176,14 @@ router.get('/', authMiddleware, async (req: Request, res: Response) => {
 
 // Busca por músculo (para sugerir substituições)
 router.get('/musculo/:musculo', authMiddleware, async (req: Request, res: Response) => {
+  const musculo = req.params.musculo;
+
+  const musculoString = Array.isArray(musculo)
+    ? musculo.join(' ')
+    : musculo;
+
   const lista = await catalogoRepository.findByMusculo(
-    decodeURIComponent(req.params.musculo)
+    decodeURIComponent(musculoString)
   );
   res.json({ success: true, data: lista });
 });

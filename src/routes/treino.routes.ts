@@ -182,7 +182,16 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
 
   const treino = await treinoRepository.create({
     usuarioId: req.usuario!.id,
-    name, category, color, duration, kcal, difficulty, description, muscles, exercises,
+    name, category, color, duration, kcal, difficulty, description, muscles,
+    exercises: exercises.map((ex: any) => ({
+      exercicioId: ex.exercicioId,
+      ordem:       ex.ordem,
+      sets:        ex.sets,
+      reps:        ex.reps,
+      rest:        ex.rest,
+      weight:      ex.weight,
+      observacao:  ex.observacao ?? '',
+    })),
   });
 
   res.status(201).json({ success: true, data: treino });

@@ -3,38 +3,52 @@ import { prisma } from '../lib/prisma';
 export const treinoRepository = {
 
   async findAll(usuarioId: number) {
-    return prisma.treino.findMany({
-      where:   { usuarioId },
-      include: { exercises: true },
-      orderBy: { createdAt: 'asc' },
-    });
-  },
+  return prisma.treino.findMany({
+    where:   { usuarioId },
+    include: {
+      exercises: {
+        include: {
+          exercicio: true  // ← ExercicioCatalogo
+        },
+        orderBy: { ordem: 'asc' }
+      }
+    },
+    orderBy: { createdAt: 'asc' },
+  });
+},
 
   async findById(id: number, usuarioId: number) {
     return prisma.treino.findFirst({
       where:   { id, usuarioId },
-      include: { exercises: true },
+      include: {
+        exercises: {
+          include: {
+            exercicio: true  // ← ExercicioCatalogo
+          },
+          orderBy: { ordem: 'asc' }
+        }
+      },
     });
   },
 
   async create(data: {
-    usuarioId:   number;
-    name:        string;
-    category:    string;
-    color:       string;
-    duration:    number;
-    kcal:        number;
-    difficulty:  number;
+    usuarioId:    number;
+    name:         string;
+    category:     string;
+    color:        string;
+    duration:     number;
+    kcal:         number;
+    difficulty:   number;
     description?: string;
-    muscles:     string[];
+    muscles:      string[];
     exercises: {
-      name:   string;
-      desc:   string;
-      sets:   number;
-      reps:   number;
-      rest:   number;
-      weight: number;
-      tag:    string;
+      exercicioId: number;
+      ordem:       number;
+      sets:        number;
+      reps:        number;
+      rest:        number;
+      weight:      number;
+      observacao?: string;
     }[];
   }) {
     return prisma.treino.create({
@@ -48,9 +62,24 @@ export const treinoRepository = {
         difficulty:  data.difficulty,
         description: data.description,
         muscles:     data.muscles,
-        exercises: { create: data.exercises },
+        exercises: {
+          create: data.exercises.map(ex => ({
+            exercicioId: ex.exercicioId,  // ← só o ID, não o objeto
+            ordem:       ex.ordem,
+            sets:        ex.sets,
+            reps:        ex.reps,
+            rest:        ex.rest,
+            weight:      ex.weight,
+            observacao:  ex.observacao ?? '',
+          })),
+        },
       },
-      include: { exercises: true },
+      include: {
+        exercises: {
+          include: { exercicio: true },
+          orderBy: { ordem: 'asc' },
+        },
+      },
     });
   },
 

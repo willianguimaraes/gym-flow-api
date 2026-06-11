@@ -20,6 +20,7 @@ export interface TreinoExercicio {
   rest:        number;
   weight:      number;        // 0 = peso corporal
   finalizado?: boolean;
+  observacao?: string;
 }
 
 export interface Treino {

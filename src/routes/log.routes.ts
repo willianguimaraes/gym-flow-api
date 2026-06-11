@@ -49,8 +49,10 @@ router.get('/exercicio/:exercicioId/evolucao', authMiddleware, async (req: Reque
     return;
   }
 
-  const evolucao = await exerciseLogRepository.findByExercicio(exercicioId);
-  res.json({ success: true, data: evolucao });
+  res.status(400).json({ success: false, message: 'Não Implementado.' });
+
+  // const evolucao = await exerciseLogRepository.findByExercicio(exercicioId);
+  // res.json({ success: true, data: evolucao });
 });
 
 /**
@@ -64,7 +66,12 @@ router.get('/exercicio/:exercicioId/evolucao', authMiddleware, async (req: Reque
  */
 router.get('/musculo/:musculo/evolucao', authMiddleware, async (req: Request, res: Response) => {
   const { musculo } = req.params;
-  const evolucao = await exerciseLogRepository.findByMusculo(decodeURIComponent(musculo));
+
+  const dayString = Array.isArray(musculo)
+  ? musculo.join(', ')
+  : musculo;
+
+  const evolucao = await exerciseLogRepository.findByMusculo(decodeURIComponent(dayString));
   res.json({ success: true, data: evolucao });
 });
 
@@ -84,8 +91,9 @@ router.post('/', authMiddleware, async (req: Request, res: Response) => {
     res.status(400).json({ success: false, message: 'sessionId, exercicioId e setsDone são obrigatórios.' });
     return;
   }
+  const treinoExercicioId = exercicioId;
 
-  const log = await exerciseLogRepository.upsert({ sessionId, exercicioId, setsDone, completed, weightUsed });
+  const log = await exerciseLogRepository.upsert({ sessionId, treinoExercicioId, setsDone, completed, weightUsed });
   res.json({ success: true, data: log });
 });
 
